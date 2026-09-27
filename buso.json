@@ -1,0 +1,14 @@
+{
+  "id": "p-buso",
+  "name": "Buso con Capota",
+  "category": "buso",
+  "shape": "buso",
+  "builtin": true,
+  "image": null,
+  "colors": [
+    {"name": "Negro", "hex": "#1A1A1A"},
+    {"name": "Gris Jaspe", "hex": "#B7B7AC"},
+    {"name": "Vino", "hex": "#6E2142"},
+    {"name": "Verde Militar", "hex": "#4B5320"}
+  ]
+}
