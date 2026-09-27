@@ -1,0 +1,1666 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">CELESTE Store - Personalización Custom & E-Commerce</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: 'var(--color-bg-light, #f0f9ff)',
+                            100: '#e0f2fe',
+                            500: 'var(--color-primary, #0284c7)',
+                            600: 'var(--color-primary-dark, #0369a1)',
+                            accent: 'var(--color-secondary, #c084fc)',
+                            btn: 'var(--color-btn, #0ea5e9)'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        pacific: ['Pacifico', 'cursive'],
+                        script: ['Dancing Script', 'cursive'],
+                        mono: ['Space Grotesk', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Dancing+Script:wght@700&family=Outfit:wght@300;400;500;600;700;800&family=Pacifico&family=Poppins:wght@400;600;700&family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet">
+
+    <!-- Fabric.js Canvas Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Dynamic Theme CSS Variables -->
+    <style id="dynamic-theme-vars">
+        :root {
+            --color-primary: #0284c7;
+            --color-primary-dark: #0369a1;
+            --color-secondary: #c084fc;
+            --color-btn: #0ea5e9;
+            --color-bg-light: #f8fafc;
+            --color-body-bg: #f1f5f9;
+        }
+        body {
+            background-color: var(--color-body-bg);
+            font-family: 'Outfit', sans-serif;
+        }
+        .canvas-container { margin: 0 auto !important; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.03); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Code Editor Styling */
+        .code-editor-line-numbers {
+            user-select: none;
+            text-align: right;
+            padding-right: 0.75rem;
+            color: #64748b;
+        }
+    </style>
+
+    <!-- Dynamic Admin Custom CSS Injector Slot -->
+    <style id="user-custom-css"></style>
+</head>
+<body class="h-full text-slate-800 flex flex-col custom-scrollbar relative">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Custom Modal Dialog (Replaces browser alert/confirm) -->
+    <div id="custom-dialog-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 flex flex-col space-y-4 transform transition-all scale-100">
+            <div class="flex items-center space-x-3">
+                <div id="dialog-icon-bg" class="w-10 h-10 rounded-2xl bg-sky-100 text-sky-600 flex items-center justify-center text-lg">
+                    <i id="dialog-icon" class="fa-solid fa-circle-info"></i>
+                </div>
+                <h3 id="dialog-title" class="font-bold text-lg text-slate-800">Notificación</h3>
+            </div>
+            <p id="dialog-message" class="text-sm text-slate-600 leading-relaxed"></p>
+            <div class="flex justify-end gap-2 pt-2" id="dialog-actions">
+                <button onclick="closeCustomDialog()" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dynamic Admin Injected HTML Banner Slot -->
+    <div id="dynamic-user-banner"></div>
+
+    <!-- Navigation Header -->
+    <header class="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40 shadow-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Brand & Logo -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchMainTab('designer')">
+                    <div id="brand-logo-container" class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-sky-400 to-purple-400 flex items-center justify-center text-white font-bold text-xl shadow-md overflow-hidden">
+                        <img id="brand-logo-img" src="" alt="Logo" class="w-full h-full object-cover hidden">
+                        <span id="brand-logo-icon">✨</span>
+                    </div>
+                    <div>
+                        <span id="brand-name-display" class="text-xl font-extrabold tracking-wider bg-gradient-to-r from-sky-600 via-purple-500 to-pink-500 bg-clip-text text-transparent">CELESTE</span>
+                        <span id="brand-tagline-display" class="text-[10px] font-bold tracking-widest text-slate-400 block -mt-1 uppercase">STORE • CUSTOM STUDIO</span>
+                    </div>
+                </div>
+
+                <!-- Navigation Links -->
+                <nav class="hidden md:flex space-x-1 bg-slate-100/90 p-1 rounded-2xl text-xs font-semibold">
+                    <button id="nav-btn-designer" onclick="switchMainTab('designer')" class="nav-tab-btn px-4 py-2 rounded-xl bg-white text-sky-600 shadow-xs transition">
+                        <i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i>Estudio Diseñador
+                    </button>
+                    <button id="nav-btn-catalog" onclick="switchMainTab('catalog')" class="nav-tab-btn px-4 py-2 rounded-xl text-slate-600 hover:text-sky-600 transition">
+                        <i class="fa-solid fa-store mr-1.5"></i>Catálogo Completo
+                    </button>
+                    <button id="nav-btn-orders" onclick="switchMainTab('orders')" class="nav-tab-btn px-4 py-2 rounded-xl text-slate-600 hover:text-sky-600 transition">
+                        <i class="fa-solid fa-clock-rotate-left mr-1.5"></i>Mis Pedidos (<span id="cart-orders-count">0</span>)
+                    </button>
+                </nav>
+
+                <!-- Actions & Admin Trigger -->
+                <div class="flex items-center space-x-2">
+                    <button onclick="openCheckoutModal()" class="px-3.5 py-2 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition flex items-center gap-1.5 border border-slate-200/80">
+                        <i class="fa-solid fa-bag-shopping text-sky-500"></i>
+                        <span>Carrito</span>
+                        <span id="cart-badge" class="bg-sky-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">0</span>
+                    </button>
+
+                    <!-- Super Admin Toggle Button -->
+                    <button onclick="openSuperAdminModal()" class="px-3.5 py-2 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition flex items-center gap-2 shadow-sm">
+                        <i class="fa-solid fa-code text-amber-400"></i>
+                        <span class="hidden sm:inline">Modo Super Admin</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-5 md:p-6 flex flex-col">
+        
+        <!-- VIEW 1: DESIGNER STUDIO (FRONT-END CUSTOMIZER) -->
+        <div id="view-designer" class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- LEFT TOOLBAR (5 Cols on LG) -->
+            <div class="lg:col-span-5 bg-white rounded-3xl p-4 sm:p-5 shadow-sm border border-slate-200/80 flex flex-col h-[680px] lg:h-[760px]">
+                
+                <!-- Tools Navigation Tabs -->
+                <div class="grid grid-cols-4 gap-1 p-1 bg-slate-100 rounded-2xl mb-4 text-xs font-bold">
+                    <button onclick="switchStudioTool('products')" id="st-btn-products" class="studio-tool-btn py-2.5 rounded-xl bg-white text-sky-600 shadow-xs transition flex flex-col items-center gap-1">
+                        <i class="fa-solid fa-shirt"></i><span>Prenda</span>
+                    </button>
+                    <button onclick="switchStudioTool('stickers')" id="st-btn-stickers" class="studio-tool-btn py-2.5 rounded-xl text-slate-500 hover:text-slate-800 transition flex flex-col items-center gap-1">
+                        <i class="fa-solid fa-icons"></i><span>Stickers</span>
+                    </button>
+                    <button onclick="switchStudioTool('text')" id="st-btn-text" class="studio-tool-btn py-2.5 rounded-xl text-slate-500 hover:text-slate-800 transition flex flex-col items-center gap-1">
+                        <i class="fa-solid fa-font"></i><span>Texto</span>
+                    </button>
+                    <button onclick="switchStudioTool('upload')" id="st-btn-upload" class="studio-tool-btn py-2.5 rounded-xl text-slate-500 hover:text-slate-800 transition flex flex-col items-center gap-1">
+                        <i class="fa-solid fa-cloud-arrow-up"></i><span>Mi Imagen</span>
+                    </button>
+                </div>
+
+                <!-- TOOL 1: PRODUCT & COLOR SELECTOR -->
+                <div id="st-content-products" class="studio-tool-content flex-1 overflow-y-auto custom-scrollbar space-y-5 pr-1">
+                    <div>
+                        <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-2">1. Elige tu Producto Base</label>
+                        <div class="grid grid-cols-2 gap-2.5" id="designer-products-grid">
+                            <!-- Injected dynamically -->
+                        </div>
+                    </div>
+
+                    <hr class="border-slate-100">
+
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-400">2. Color del Producto</label>
+                            <span id="selected-color-label" class="text-xs font-bold text-sky-600">Blanco</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2 p-2.5 bg-slate-50 rounded-2xl border border-slate-100" id="designer-colors-palette">
+                            <!-- Color swatches injected -->
+                        </div>
+                    </div>
+
+                    <hr class="border-slate-100">
+
+                    <div>
+                        <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-2">3. Talla o Tamaño</label>
+                        <div class="flex gap-2" id="size-selector-group">
+                            <button onclick="setProductSize('S')" class="size-btn px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold hover:border-sky-400 transition flex-1">S</button>
+                            <button onclick="setProductSize('M')" class="size-btn px-3 py-2 border-2 border-sky-500 bg-sky-50 text-sky-600 rounded-xl text-xs font-bold transition flex-1">M</button>
+                            <button onclick="setProductSize('L')" class="size-btn px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold hover:border-sky-400 transition flex-1">L</button>
+                            <button onclick="setProductSize('XL')" class="size-btn px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold hover:border-sky-400 transition flex-1">XL</button>
+                            <button onclick="setProductSize('XXL')" class="size-btn px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold hover:border-sky-400 transition flex-1">XXL</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TOOL 2: STICKERS GALLERY -->
+                <div id="st-content-stickers" class="studio-tool-content hidden flex-1 flex flex-col overflow-hidden">
+                    <!-- Categories horizontal scroll -->
+                    <div class="flex gap-1.5 overflow-x-auto pb-2 custom-scrollbar mb-3 text-xs font-semibold" id="sticker-category-pills">
+                        <!-- Pills injected -->
+                    </div>
+
+                    <!-- Search Input -->
+                    <div class="relative mb-3">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
+                        <input type="text" id="sticker-search-input" oninput="filterStickersList()" placeholder="Buscar sticker (ej: anime, frase, retro)..." class="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-300">
+                    </div>
+
+                    <!-- Stickers Grid -->
+                    <div class="flex-1 overflow-y-auto custom-scrollbar grid grid-cols-3 gap-2.5 p-1" id="designer-stickers-grid">
+                        <!-- Stickers injected -->
+                    </div>
+                </div>
+
+                <!-- TOOL 3: CUSTOM TEXT CREATOR -->
+                <div id="st-content-text" class="studio-tool-content hidden flex-1 overflow-y-auto custom-scrollbar space-y-4 pr-1">
+                    <div>
+                        <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-1">Tu Mensaje o Frase</label>
+                        <textarea id="custom-text-field" rows="2" placeholder="Escribe aquí tu texto personalizado..." class="w-full p-3 text-sm rounded-xl border border-slate-200 focus:ring-2 focus:ring-sky-300 focus:outline-none"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-1">Estilo de Fuente</label>
+                        <select id="text-font-selector" class="w-full p-2.5 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-sky-300 focus:outline-none font-semibold">
+                            <option value="Outfit" style="font-family: 'Outfit';">Outfit Clean Modern</option>
+                            <option value="Pacifico" style="font-family: 'Pacifico';">Pacifico Cursive Retro</option>
+                            <option value="Dancing Script" style="font-family: 'Dancing Script';">Dancing Script Elegante</option>
+                            <option value="Bebas Neue" style="font-family: 'Bebas Neue';">BEBAS NEUE URBAN BOLD</option>
+                            <option value="Poppins" style="font-family: 'Poppins';">Poppins Soft Bold</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-1">Color del Texto</label>
+                            <input type="color" id="text-color-picker" value="#0f172a" class="w-full h-10 rounded-xl cursor-pointer border border-slate-200 p-1">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-1">Tamaño Base</label>
+                            <input type="range" id="text-size-range" min="16" max="80" value="32" class="w-full mt-3 accent-sky-500">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-1">Color Contorno (Borde)</label>
+                            <input type="color" id="text-stroke-picker" value="#ffffff" class="w-full h-10 rounded-xl cursor-pointer border border-slate-200 p-1">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-1">Grosor Borde</label>
+                            <input type="range" id="text-stroke-width" min="0" max="8" value="0" class="w-full mt-3 accent-sky-500">
+                        </div>
+                    </div>
+
+                    <button onclick="addTextToCanvas()" class="w-full py-3 bg-slate-900 text-white hover:bg-slate-800 rounded-xl text-xs font-bold tracking-wide shadow-xs transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-plus-circle text-sky-400"></i> Añadir Texto al Lienzo
+                    </button>
+                </div>
+
+                <!-- TOOL 4: USER IMAGE UPLOAD -->
+                <div id="st-content-upload" class="studio-tool-content hidden flex-1 overflow-y-auto custom-scrollbar space-y-4">
+                    <div class="border-2 border-dashed border-sky-300 rounded-2xl p-6 text-center hover:bg-sky-50/50 transition cursor-pointer relative" onclick="document.getElementById('user-file-input').click()">
+                        <i class="fa-solid fa-cloud-arrow-up text-3xl text-sky-500 mb-2"></i>
+                        <p class="text-xs font-bold text-slate-700">Haz clic para subir tu propio logo o imagen</p>
+                        <p class="text-[10px] text-slate-400 mt-1">Soporta PNG, JPG o SVG (Recomendado sin fondo)</p>
+                        <input type="file" id="user-file-input" accept="image/*" class="hidden" onchange="handleUserFileUpload(event)">
+                    </div>
+
+                    <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-400">Mis Imágenes Subidas</label>
+                    <div id="user-uploads-gallery" class="grid grid-cols-3 gap-2">
+                        <!-- Uploaded items previews -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- CENTER CANVAS & MOCKUP DISPLAY (7 Cols on LG) -->
+            <div class="lg:col-span-7 flex flex-col space-y-4">
+                
+                <!-- Canvas Control Toolbar -->
+                <div class="bg-white rounded-2xl p-2.5 shadow-xs border border-slate-200/80 flex items-center justify-between overflow-x-auto gap-2 text-xs font-semibold">
+                    <div class="flex items-center space-x-1">
+                        <button onclick="bringSelectedForward()" title="Traer al Frente" class="px-2.5 py-1.5 rounded-lg hover:bg-slate-100 text-slate-700 transition flex items-center gap-1">
+                            <i class="fa-solid fa-layer-group text-sky-500"></i><span class="hidden sm:inline">Traer Frente</span>
+                        </button>
+                        <button onclick="sendSelectedBackward()" title="Enviar Atrás" class="px-2.5 py-1.5 rounded-lg hover:bg-slate-100 text-slate-700 transition flex items-center gap-1">
+                            <i class="fa-solid fa-angles-down text-slate-400"></i><span class="hidden sm:inline">Enviar Atrás</span>
+                        </button>
+                        <button onclick="centerSelectedObject()" title="Centrar" class="px-2.5 py-1.5 rounded-lg hover:bg-slate-100 text-slate-700 transition flex items-center gap-1">
+                            <i class="fa-solid fa-crosshairs text-sky-500"></i><span class="hidden sm:inline">Centrar</span>
+                        </button>
+                        <button onclick="flipSelectedHorizontal()" title="Voltear Horizontal" class="px-2.5 py-1.5 rounded-lg hover:bg-slate-100 text-slate-700 transition flex items-center gap-1">
+                            <i class="fa-solid fa-right-left text-slate-500"></i><span class="hidden sm:inline">Reflejar</span>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center space-x-1 border-l border-slate-200 pl-2">
+                        <button onclick="deleteSelectedObject()" class="px-2.5 py-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition flex items-center gap-1 font-bold">
+                            <i class="fa-solid fa-trash-can"></i><span>Borrar</span>
+                        </button>
+                        <button onclick="clearCanvasItems()" class="px-2.5 py-1.5 rounded-lg hover:bg-slate-100 text-slate-500 transition" title="Limpiar Todo">
+                            <i class="fa-solid fa-rotate-left"></i><span>Limpiar</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Fabric Canvas Visual Container -->
+                <div class="relative bg-white rounded-3xl p-4 sm:p-6 shadow-xs border border-slate-200/80 flex-1 flex flex-col items-center justify-center min-h-[440px] sm:min-h-[510px] overflow-hidden select-none">
+                    
+                    <!-- Guide Watermark -->
+                    <div class="absolute top-4 left-4 bg-slate-100/90 backdrop-blur-sm px-3 py-1 rounded-full text-[11px] font-bold text-slate-600 flex items-center gap-2 z-10">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                        <span id="canvas-product-type-label">Vista Previa Realista</span>
+                    </div>
+
+                    <!-- Printable Box Indicator -->
+                    <div class="absolute inset-x-10 top-16 bottom-16 border-2 border-dashed border-sky-300/60 rounded-2xl pointer-events-none flex items-start justify-center pt-2 z-10">
+                        <span class="text-[9px] uppercase font-extrabold tracking-widest text-sky-400/80 bg-white/80 px-2 py-0.5 rounded-md">Área Limite de Estampado</span>
+                    </div>
+
+                    <!-- Fabric Canvas Wrapper -->
+                    <div class="relative z-0 shadow-lg rounded-2xl overflow-hidden border border-slate-200 bg-white">
+                        <canvas id="product-canvas" width="380" height="460"></canvas>
+                    </div>
+
+                    <!-- Canvas Tips -->
+                    <p class="text-[11px] text-slate-400 mt-3 text-center">
+                        <i class="fa-regular fa-lightbulb text-amber-400 mr-1"></i> Arrastra, gira o escala cualquier sticker. Agrega tantos elementos como desees.
+                    </p>
+                </div>
+
+                <!-- Bottom Order Bar -->
+                <div class="bg-slate-900 text-white rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md">
+                    <div class="flex items-center space-x-4 w-full sm:w-auto justify-between sm:justify-start">
+                        <div>
+                            <span class="text-xs text-slate-400 block font-medium">Producto Seleccionado:</span>
+                            <span id="summary-prod-name" class="font-extrabold text-base text-sky-300">Buso Hoodie Oversize</span>
+                            <span id="summary-prod-size" class="ml-2 text-[10px] bg-sky-500/30 text-sky-200 px-2 py-0.5 rounded-full border border-sky-400/30">Talla M</span>
+                        </div>
+                        <div class="text-right sm:text-left border-l border-slate-800 pl-4">
+                            <span class="text-xs text-slate-400 block font-medium">Precio Total:</span>
+                            <span id="summary-price-tag" class="text-xl font-black text-emerald-400">$85.000 COP</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-2 w-full sm:w-auto">
+                        <button onclick="downloadDesignPNG()" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white transition flex items-center justify-center gap-2 border border-slate-700">
+                            <i class="fa-solid fa-download"></i><span>Descargar PNG</span>
+                        </button>
+                        <button onclick="addDesignToCartAndCheckout()" class="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-xs font-extrabold text-white transition flex items-center justify-center gap-2 shadow-lg shadow-sky-500/25">
+                            <i class="fa-solid fa-bag-shopping"></i><span>Comprar Ahora</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- VIEW 2: FULL CATALOG SHOWCASE -->
+        <div id="view-catalog" class="hidden flex-1 space-y-6">
+            <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <div>
+                        <h2 class="text-2xl font-black text-slate-800">Catálogo de Productos Personalizables</h2>
+                        <p class="text-xs text-slate-500">Selecciona cualquier prenda o accesorio para empezar a diseñar tu estilo único.</p>
+                    </div>
+                    <div class="flex gap-2" id="catalog-category-filter">
+                        <!-- Filters -->
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="full-catalog-grid">
+                    <!-- Products cards injected -->
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 3: ORDERS HISTORY & STATUS -->
+        <div id="view-orders" class="hidden flex-1 space-y-6 max-w-4xl mx-auto w-full">
+            <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs">
+                <h2 class="text-2xl font-black text-slate-800 mb-2">Historial de Mis Pedidos</h2>
+                <p class="text-xs text-slate-500 mb-6">Consulta los diseños que has encargado y el estado actual de tu orden.</p>
+
+                <div id="customer-orders-list" class="space-y-4">
+                    <!-- Orders injected dynamically -->
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- CHECKOUT & PAYMENT MODAL -->
+    <div id="checkout-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-100 flex flex-col max-h-[92vh] overflow-hidden">
+            
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div class="flex items-center space-x-2">
+                    <div class="w-9 h-9 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center text-lg font-bold">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-black text-slate-800 text-base">Finalizar Pedido Personalizado</h3>
+                        <p class="text-xs text-slate-400">Completa tus datos de envío y elige tu método de pago</p>
+                    </div>
+                </div>
+                <button onclick="closeCheckoutModal()" class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-400 flex items-center justify-center">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto custom-scrollbar pt-4 space-y-5">
+                
+                <!-- Order Preview Item Card -->
+                <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center gap-4">
+                    <img id="checkout-preview-img" src="" class="w-20 h-20 object-contain rounded-xl bg-white border border-slate-200 p-1">
+                    <div class="flex-1">
+                        <h4 id="checkout-prod-title" class="font-bold text-slate-800 text-sm">Buso Hoodie Oversize</h4>
+                        <p id="checkout-prod-details" class="text-xs text-slate-500">Talla M • Color Blanco Celestial</p>
+                        <span id="checkout-prod-price" class="text-sm font-black text-sky-600 mt-1 block">$85.000 COP</span>
+                    </div>
+                </div>
+
+                <!-- Customer Details Form -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Nombre Completo *</label>
+                        <input type="text" id="cust-name" placeholder="Ej: Maria Paula Perez" class="w-full p-2.5 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-sky-300 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Teléfono / WhatsApp *</label>
+                        <input type="tel" id="cust-phone" placeholder="Ej: 3001234567" class="w-full p-2.5 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-sky-300 focus:outline-none">
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Dirección de Envío y Ciudad *</label>
+                        <input type="text" id="cust-address" placeholder="Ej: Calle 10 # 5-24, Apto 201, Bogotá" class="w-full p-2.5 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-sky-300 focus:outline-none">
+                    </div>
+                </div>
+
+                <!-- Payment Methods Radio Selector -->
+                <div>
+                    <label class="block text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-2">Método de Pago Preferido</label>
+                    <div class="space-y-2" id="checkout-payment-methods-list">
+                        <!-- Dynamic Payment Gateways injected here -->
+                    </div>
+                </div>
+
+                <!-- Selected Gateway Details Box -->
+                <div id="gateway-extra-info-box" class="p-4 bg-sky-50/80 rounded-2xl border border-sky-200/80 hidden text-xs space-y-2">
+                    <!-- Specific info for Nequi QR, MercadoPago simulation, etc. -->
+                </div>
+
+            </div>
+
+            <!-- Checkout Modal Footer -->
+            <div class="pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
+                <div>
+                    <span class="text-xs text-slate-400 block">Total a Pagar:</span>
+                    <span id="checkout-final-total" class="text-xl font-black text-emerald-600">$85.000 COP</span>
+                </div>
+                <button onclick="processFinalOrderCheckout()" class="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-xs rounded-xl transition shadow-lg shadow-emerald-500/20 flex items-center gap-2">
+                    <i class="fa-solid fa-check-circle text-base"></i> Confirmar y Procesar Pago
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- SUPER ADMIN & DEVELOPER STUDIO MODAL -->
+    <div id="superadmin-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-5 hidden">
+        <div class="bg-slate-900 text-slate-100 rounded-3xl max-w-5xl w-full h-[90vh] shadow-2xl border border-slate-800 flex flex-col overflow-hidden">
+            
+            <!-- Admin Header -->
+            <div class="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-950">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-code"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-sm text-white flex items-center gap-2">
+                            SUPER ADMIN & DEVELOPER STUDIO
+                            <span class="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full uppercase">Acceso Total</span>
+                        </h3>
+                        <p class="text-[11px] text-slate-400">Control de marca, código en vivo, pasarelas de pago y base de datos</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-2">
+                    <button onclick="saveAllAdminSettings()" class="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-xs rounded-xl transition flex items-center gap-1.5 shadow-sm">
+                        <i class="fa-solid fa-floppy-disk"></i> Guardar Todo
+                    </button>
+                    <button onclick="closeSuperAdminModal()" class="w-8 h-8 rounded-full hover:bg-slate-800 text-slate-400 flex items-center justify-center">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- PIN Login Lock View -->
+            <div id="admin-pin-view" class="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-4">
+                <div class="w-16 h-16 rounded-3xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-2xl border border-amber-500/20">
+                    <i class="fa-solid fa-key"></i>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold text-white">Ingresa la Clave Administrador</h4>
+                    <p class="text-xs text-slate-400">Clave por defecto: <code class="text-amber-300 bg-slate-800 px-1.5 py-0.5 rounded">admin123</code></p>
+                </div>
+                <div class="w-full max-w-xs space-y-3">
+                    <input type="password" id="admin-pass-input" placeholder="Clave de Seguridad" class="w-full text-center tracking-widest text-lg py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white focus:ring-2 focus:ring-amber-400 focus:outline-none">
+                    <p id="admin-pass-err" class="text-xs text-rose-400 font-bold hidden">Clave incorrecta. Intente con 'admin123'</p>
+                    <button onclick="unlockSuperAdmin()" class="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs rounded-xl transition">
+                        Autenticar & Desbloquear
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Admin Studio Workspace -->
+            <div id="admin-workbench-view" class="hidden flex-1 flex flex-col overflow-hidden">
+                
+                <!-- Admin Tabs Bar -->
+                <div class="flex border-b border-slate-800 bg-slate-950/80 text-xs font-bold text-slate-400 overflow-x-auto">
+                    <button onclick="switchAdminTab('theme')" id="ad-tab-theme" class="admin-tab-btn px-5 py-3 border-b-2 border-amber-400 text-amber-400 flex items-center gap-2 whitespace-nowrap">
+                        <i class="fa-solid fa-palette"></i> 1. Tema & Marca
+                    </button>
+                    <button onclick="switchAdminTab('code')" id="ad-tab-code" class="admin-tab-btn px-5 py-3 border-b-2 border-transparent hover:text-slate-200 flex items-center gap-2 whitespace-nowrap">
+                        <i class="fa-solid fa-code"></i> 2. Editor Código Directo (CSS/JS)
+                    </button>
+                    <button onclick="switchAdminTab('payments')" id="ad-tab-payments" class="admin-tab-btn px-5 py-3 border-b-2 border-transparent hover:text-slate-200 flex items-center gap-2 whitespace-nowrap">
+                        <i class="fa-solid fa-credit-card"></i> 3. Medios de Pago
+                    </button>
+                    <button onclick="switchAdminTab('catalog')" id="ad-tab-catalog" class="admin-tab-btn px-5 py-3 border-b-2 border-transparent hover:text-slate-200 flex items-center gap-2 whitespace-nowrap">
+                        <i class="fa-solid fa-box-archive"></i> 4. Gestor Archivos & Catálogo
+                    </button>
+                    <button onclick="switchAdminTab('orders')" id="ad-tab-orders" class="admin-tab-btn px-5 py-3 border-b-2 border-transparent hover:text-slate-200 flex items-center gap-2 whitespace-nowrap">
+                        <i class="fa-solid fa-list-check"></i> 5. Gestión de Pedidos
+                    </button>
+                </div>
+
+                <!-- TAB 1: THEME & BRAND CUSTOMIZER -->
+                <div id="ad-sec-theme" class="admin-sec-content flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        
+                        <div class="bg-slate-800/60 p-4 rounded-2xl border border-slate-700/80 space-y-3">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-amber-400"><i class="fa-solid fa-id-card mr-1"></i> Identidad de la Tienda</h4>
+                            <div>
+                                <label class="block text-[11px] text-slate-400 mb-1">Nombre de la Tienda</label>
+                                <input type="text" id="adm-store-name" class="w-full p-2.5 text-xs rounded-xl bg-slate-900 border border-slate-700 text-white focus:ring-2 focus:ring-amber-400 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] text-slate-400 mb-1">Eslogan Principal</label>
+                                <input type="text" id="adm-store-tagline" class="w-full p-2.5 text-xs rounded-xl bg-slate-900 border border-slate-700 text-white focus:ring-2 focus:ring-amber-400 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] text-slate-400 mb-1">Número WhatsApp de Pedidos</label>
+                                <input type="text" id="adm-store-whatsapp" placeholder="Ej: 573001234567" class="w-full p-2.5 text-xs rounded-xl bg-slate-900 border border-slate-700 text-white focus:ring-2 focus:ring-amber-400 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] text-slate-400 mb-1">URL Logo de la Tienda (Opcional)</label>
+                                <input type="text" id="adm-store-logo-url" placeholder="https://..." class="w-full p-2.5 text-xs rounded-xl bg-slate-900 border border-slate-700 text-white focus:ring-2 focus:ring-amber-400 focus:outline-none">
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-800/60 p-4 rounded-2xl border border-slate-700/80 space-y-3">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-amber-400"><i class="fa-solid fa-paint-roller mr-1"></i> Paleta Dinámica de Colores</h4>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[11px] text-slate-400 mb-1">Color Primario</label>
+                                    <input type="color" id="adm-color-primary" onchange="previewThemeColorsLive()" class="w-full h-10 rounded-xl bg-slate-900 border border-slate-700 cursor-pointer p-1">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] text-slate-400 mb-1">Color Secundario</label>
+                                    <input type="color" id="adm-color-secondary" onchange="previewThemeColorsLive()" class="w-full h-10 rounded-xl bg-slate-900 border border-slate-700 cursor-pointer p-1">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] text-slate-400 mb-1">Color de Botones</label>
+                                    <input type="color" id="adm-color-btn" onchange="previewThemeColorsLive()" class="w-full h-10 rounded-xl bg-slate-900 border border-slate-700 cursor-pointer p-1">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] text-slate-400 mb-1">Fondo de la Página</label>
+                                    <input type="color" id="adm-color-bg" onchange="previewThemeColorsLive()" class="w-full h-10 rounded-xl bg-slate-900 border border-slate-700 cursor-pointer p-1">
+                                </div>
+                            </div>
+                            <p class="text-[10px] text-slate-400 pt-2">Los cambios de color se aplican en tiempo real a las variables CSS de toda la página.</p>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- TAB 2: LIVE CODE & CSS INJECTOR -->
+                <div id="ad-sec-code" class="admin-sec-content hidden flex-1 flex flex-col p-4 overflow-hidden space-y-3">
+                    <div class="flex items-center justify-between text-xs">
+                        <div class="flex space-x-2">
+                            <button onclick="switchCodeEditorSubTab('css')" id="code-subtab-css" class="px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold">CSS Personalizado</button>
+                            <button onclick="switchCodeEditorSubTab('banner')" id="code-subtab-banner" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 font-bold hover:bg-slate-700">Banner HTML Promo</button>
+                        </div>
+                        <span class="text-[11px] text-slate-400 font-mono"><i class="fa-solid fa-bolt text-amber-400"></i> Inyección directa al DOM</span>
+                    </div>
+
+                    <!-- CSS Editor Block -->
+                    <div id="editor-block-css" class="flex-1 flex flex-col bg-slate-950 rounded-2xl border border-slate-800 p-3 font-mono text-xs overflow-hidden">
+                        <div class="text-[10px] text-slate-500 mb-2 flex justify-between">
+                            <span>/* Escribe código CSS directo. Ejemplo: body { filter: contrast(1.05); } */</span>
+                            <span>CSS Directo</span>
+                        </div>
+                        <textarea id="adm-code-css-input" class="w-full flex-1 bg-transparent text-emerald-400 focus:outline-none custom-scrollbar resize-none font-mono text-xs leading-relaxed" placeholder="/* Escribe tu código CSS personalizado aquí... */"></textarea>
+                    </div>
+
+                    <!-- HTML Banner Editor Block -->
+                    <div id="editor-block-banner" class="hidden flex-1 flex flex-col bg-slate-950 rounded-2xl border border-slate-800 p-3 font-mono text-xs overflow-hidden">
+                        <div class="text-[10px] text-slate-500 mb-2 flex justify-between">
+                            <span><!-- Inserta HTML para mostrar una barra promocional arriba --></span>
+                            <span>HTML Banner Injection</span>
+                        </div>
+                        <textarea id="adm-code-html-input" class="w-full flex-1 bg-transparent text-amber-300 focus:outline-none custom-scrollbar resize-none font-mono text-xs leading-relaxed" placeholder="<div class='bg-gradient-to-r from-purple-600 to-pink-600 text-white text-center text-xs py-2 font-bold'>✨ ENVÍO GRATIS EN COMPRAS MAYORES A $150.000 COP ✨</div>"></textarea>
+                    </div>
+
+                    <div class="flex justify-end">
+                        <button onclick="applyInjectedCodeLive()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs rounded-xl transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-play"></i> Aplicar e Inyectar Código Ahora
+                        </button>
+                    </div>
+                </div>
+
+                <!-- TAB 3: PAYMENT GATEWAYS CONFIG -->
+                <div id="ad-sec-payments" class="admin-sec-content hidden flex-1 overflow-y-auto p-5 space-y-4 custom-scrollbar">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-amber-400 mb-2">Configuración de Pasarelas de Pago</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="adm-payment-gateways-grid">
+                        <!-- Dynamic payment config cards injected -->
+                    </div>
+                </div>
+
+                <!-- TAB 4: FILE & CATALOG MANAGER -->
+                <div id="ad-sec-catalog" class="admin-sec-content hidden flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar">
+                    
+                    <!-- Create Sticker Form -->
+                    <div class="bg-slate-800/60 p-4 rounded-2xl border border-slate-700/80 space-y-3">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-amber-400"><i class="fa-solid fa-plus-circle mr-1"></i> Subir e Importar Nuevo Sticker</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div>
+                                <label class="block text-[11px] text-slate-400 mb-1">Nombre Sticker</label>
+                                <input type="text" id="adm-stk-name" placeholder="Ej: Dragón Anime Neon" class="w-full p-2.5 text-xs rounded-xl bg-slate-900 border border-slate-700 text-white">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] text-slate-400 mb-1">Categoría</label>
+                                <select id="adm-stk-cat" class="w-full p-2.5 text-xs rounded-xl bg-slate-900 border border-slate-700 text-white">
+                                    <option value="Anime">Anime</option>
+                                    <option value="Pop Culture">Pop Culture</option>
+                                    <option value="Frases">Frases</option>
+                                    <option value="Minimalista">Minimalista</option>
+                                    <option value="Admin Uploads">Admin Uploads</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] text-slate-400 mb-1">Archivo Imagen (PNG/SVG)</label>
+                                <input type="file" id="adm-stk-file" accept="image/*" class="w-full text-xs text-slate-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-amber-500 file:text-slate-950">
+                            </div>
+                        </div>
+                        <button onclick="saveAdminNewSticker()" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs rounded-xl transition">
+                            Guardar Sticker en Galería
+                        </button>
+                    </div>
+
+                    <!-- Manage Current Stickers Library -->
+                    <div class="bg-slate-800/60 p-4 rounded-2xl border border-slate-700/80">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-amber-400 mb-3">Biblioteca Actual de Stickers</h4>
+                        <div class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-3 max-h-60 overflow-y-auto p-1 custom-scrollbar" id="adm-stickers-manage-grid">
+                            <!-- Items injected -->
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- TAB 5: ORDERS MANAGEMENT -->
+                <div id="ad-sec-orders" class="admin-sec-content hidden flex-1 overflow-y-auto p-5 space-y-4 custom-scrollbar">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-amber-400">Pedidos Recibidos en Tienda</h4>
+                        <button onclick="clearAllOrdersData()" class="text-xs text-rose-400 hover:underline">Vaciar Historial Pedidos</button>
+                    </div>
+                    <div class="space-y-3" id="adm-orders-table-list">
+                        <!-- Orders injected dynamically -->
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        /* GLOBAL APP STATE & PERSISTENCE ENGINE */
+        let fabricCanvas = null;
+        let activeProduct = null;
+        let selectedColor = null;
+        let selectedSize = 'M';
+        let userUploadsHistory = [];
+
+        // DEFAULT STORE CONFIG
+        const defaultConfig = {
+            storeName: "CELESTE Store",
+            tagline: "Estampados Personalizados & Moda Custom",
+            whatsapp: "573001234567",
+            logoUrl: "",
+            colorPrimary: "#0284c7",
+            colorSecondary: "#c084fc",
+            colorBtn: "#0ea5e9",
+            colorBg: "#f1f5f9",
+            customCSS: "/* Tu código CSS dinámico */\n.prod-card:hover { transform: translateY(-2px); }",
+            customHTMLBanner: "<div class='bg-gradient-to-r from-sky-600 via-purple-600 to-pink-600 text-white text-center text-xs py-2 font-bold tracking-wide shadow-xs'>✨ ¡DESCUENTO DEL 10% EN TU PRIMERA COMPRA O CON PEDIDO VÍA WHATSAPP! ✨</div>"
+        };
+
+        // DEFAULT PRODUCTS CATALOG
+        const defaultProducts = [
+            {
+                id: 'prod-hoodie',
+                name: 'Buso Hoodie Oversize',
+                category: 'Ropa',
+                price: 85000,
+                type: 'hoodie',
+                icon: 'fa-user-ninja',
+                colors: [
+                    { name: 'Blanco Celestial', hex: '#FFFFFF' },
+                    { name: 'Azul Celeste', hex: '#BAE6FD' },
+                    { name: 'Rosa Pastel', hex: '#FFC6FF' },
+                    { name: 'Negro Azabache', hex: '#1E293B' },
+                    { name: 'Gris Brezo', hex: '#94A3B8' }
+                ]
+            },
+            {
+                id: 'prod-tshirt',
+                name: 'Camiseta Algodón Heavy Weight',
+                category: 'Ropa',
+                price: 45000,
+                type: 'tshirt',
+                icon: 'fa-shirt',
+                colors: [
+                    { name: 'Blanco Celestial', hex: '#FFFFFF' },
+                    { name: 'Negro Azabache', hex: '#1E293B' },
+                    { name: 'Azul Celeste', hex: '#BAE6FD' },
+                    { name: 'Verde Menta', hex: '#CAFFBF' }
+                ]
+            },
+            {
+                id: 'prod-mug',
+                name: 'Vaso Mug Térmico Cerámico',
+                category: 'Vasos',
+                price: 28000,
+                type: 'mug',
+                icon: 'fa-mug-hot',
+                colors: [
+                    { name: 'Blanco Cerámica', hex: '#FFFFFF' },
+                    { name: 'Rosa Pastel', hex: '#FFC6FF' },
+                    { name: 'Azul Celeste', hex: '#BAE6FD' }
+                ]
+            },
+            {
+                id: 'prod-totebag',
+                name: 'Bolso Tote Bag Canvas',
+                category: 'Bolsos',
+                price: 32000,
+                type: 'totebag',
+                icon: 'fa-bag-shopping',
+                colors: [
+                    { name: 'Beige Canvas', hex: '#F5F5DC' },
+                    { name: 'Blanco Puro', hex: '#FFFFFF' },
+                    { name: 'Negro Azabache', hex: '#1E293B' }
+                ]
+            },
+            {
+                id: 'prod-cap',
+                name: 'Gorra Trucker Custom',
+                category: 'Gorras',
+                price: 35000,
+                type: 'cap',
+                icon: 'fa-graduation-cap',
+                colors: [
+                    { name: 'Negro Frontal Blanco', hex: '#1E293B' },
+                    { name: 'Blanco Puro', hex: '#FFFFFF' },
+                    { name: 'Azul Celeste', hex: '#BAE6FD' }
+                ]
+            },
+            {
+                id: 'prod-thermos',
+                name: 'Termo Metálico Deportivo',
+                category: 'Vasos',
+                price: 48000,
+                type: 'thermos',
+                icon: 'fa-bottle-water',
+                colors: [
+                    { name: 'Plata Metálico', hex: '#E2E8F0' },
+                    { name: 'Blanco Nieve', hex: '#FFFFFF' },
+                    { name: 'Negro Mate', hex: '#0F172A' }
+                ]
+            }
+        ];
+
+        // DEFAULT STICKERS GALLERY
+        const defaultStickers = [
+            { id: 'stk-1', name: 'Oso Celeste Cute', category: 'Anime', url: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="%237dd3fc"/><circle cx="30" cy="30" r="12" fill="%2338bdf8"/><circle cx="70" cy="30" r="12" fill="%2338bdf8"/><circle cx="42" cy="48" r="4" fill="%230f172a"/><circle cx="58" cy="48" r="4" fill="%230f172a"/><ellipse cx="50" cy="56" rx="6" ry="4" fill="%23ffffff"/><ellipse cx="50" cy="55" rx="3" ry="2" fill="%230f172a"/></svg>' },
+            { id: 'stk-2', name: 'Sol & Luna Minimal', category: 'Minimalista', url: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="35" fill="%23fdffb6"/><path d="M50 15 A35 35 0 0 0 85 50 A25 25 0 0 1 50 15 Z" fill="%23c084fc"/><circle cx="40" cy="40" r="3" fill="%231e293b"/></svg>' },
+            { id: 'stk-3', name: 'Gato Nube Pastel', category: 'Anime', url: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M25 35 L35 15 L50 30 L65 15 L75 35 Z" fill="%23e8dff5"/><circle cx="50" cy="55" r="30" fill="%23e8dff5"/><circle cx="38" cy="50" r="5" fill="%2338bdf8"/><circle cx="62" cy="50" r="5" fill="%2338bdf8"/></svg>' },
+            { id: 'stk-4', name: 'Corazón Neon Y2K', category: 'Pop Culture', url: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50 80 C20 50 10 30 30 15 C42 6 50 20 50 20 C50 20 58 6 70 15 C90 30 80 50 50 80 Z" fill="%23a855f7" stroke="%23ffffff" stroke-width="3"/></svg>' },
+            { id: 'stk-5', name: 'Frase Good Vibes', category: 'Frases', url: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 60"><rect width="120" height="60" rx="15" fill="%23bae6fd"/><text x="60" y="36" font-family="sans-serif" font-weight="bold" font-size="14" fill="%230284c7" text-anchor="middle">GOOD VIBES</text></svg>' }
+        ];
+
+        // DEFAULT PAYMENT GATEWAYS CONFIG
+        const defaultGateways = [
+            { id: 'whatsapp', name: 'Pago Directo vía WhatsApp', enabled: true, fee: 0, details: 'Mensaje automático con resumen de orden e imagen del diseño.' },
+            { id: 'nequi', name: 'Transferencia Nequi / Bancolombia', enabled: true, fee: 0, accountNum: '3001234567', holder: 'CELESTE Store Oficial', qrUrl: '' },
+            { id: 'mercadopago', name: 'Mercado Pago (Tarjetas / Efecty)', enabled: true, fee: 0, publicKey: 'TEST-123456-PUBLIC-KEY' },
+            { id: 'wompi', name: 'Wompi / Bold', enabled: false, fee: 0, publicKey: '' },
+            { id: 'paypal', name: 'PayPal USD', enabled: false, fee: 5, clientId: '' },
+            { id: 'cod', name: 'Pago Contraentrega (Efectivo)', enabled: true, fee: 3000, details: 'Pagas al recibir tu producto.' }
+        ];
+
+        /* LOCALSTORAGE READERS */
+        function getAppConfig() {
+            const saved = localStorage.getItem('celeste_config');
+            return saved ? JSON.parse(saved) : defaultConfig;
+        }
+
+        function getProductsList() {
+            const saved = localStorage.getItem('celeste_products');
+            return saved ? JSON.parse(saved) : defaultProducts;
+        }
+
+        function getStickersList() {
+            const saved = localStorage.getItem('celeste_stickers');
+            return saved ? JSON.parse(saved) : defaultStickers;
+        }
+
+        function getGatewaysConfig() {
+            const saved = localStorage.getItem('celeste_gateways');
+            return saved ? JSON.parse(saved) : defaultGateways;
+        }
+
+        function getOrdersList() {
+            const saved = localStorage.getItem('celeste_orders');
+            return saved ? JSON.parse(saved) : [];
+        }
+
+        // APP INITIALIZATION
+        window.addEventListener('DOMContentLoaded', () => {
+            applySavedConfigToDOM();
+            initFabricCanvas();
+            renderDesignerProducts();
+            renderDesignerStickers();
+            renderCatalogView();
+            renderOrdersView();
+            selectProduct(getProductsList()[0].id);
+        });
+
+        function applySavedConfigToDOM() {
+            const cfg = getAppConfig();
+            
+            // Brand text
+            document.getElementById('brand-name-display').innerText = cfg.storeName;
+            document.getElementById('brand-tagline-display').innerText = cfg.tagline;
+            document.getElementById('page-title').innerText = `${cfg.storeName} - Personalización Custom`;
+
+            // Logo image
+            if (cfg.logoUrl) {
+                document.getElementById('brand-logo-img').src = cfg.logoUrl;
+                document.getElementById('brand-logo-img').classList.remove('hidden');
+                document.getElementById('brand-logo-icon').classList.add('hidden');
+            }
+
+            // CSS Variables
+            const rootStyle = document.documentElement.style;
+            rootStyle.setProperty('--color-primary', cfg.colorPrimary);
+            rootStyle.setProperty('--color-secondary', cfg.colorSecondary);
+            rootStyle.setProperty('--color-btn', cfg.colorBtn);
+            rootStyle.setProperty('--color-body-bg', cfg.colorBg);
+
+            // Injected custom CSS & Banner
+            document.getElementById('user-custom-css').innerHTML = cfg.customCSS || '';
+            document.getElementById('dynamic-user-banner').innerHTML = cfg.customHTMLBanner || '';
+        }
+
+        function initFabricCanvas() {
+            fabricCanvas = new fabric.Canvas('product-canvas', {
+                backgroundColor: 'transparent',
+                selection: true
+            });
+
+            fabricCanvas.on('object:added', updatePriceSummary);
+            fabricCanvas.on('object:removed', updatePriceSummary);
+            fabricCanvas.on('object:modified', updatePriceSummary);
+        }
+
+        function renderMockupBackground() {
+            if (!fabricCanvas || !activeProduct) return;
+
+            const colorHex = selectedColor ? selectedColor.hex : '#FFFFFF';
+            const type = activeProduct.type;
+            document.getElementById('canvas-product-type-label').innerText = `${activeProduct.name} (${selectedColor ? selectedColor.name : ''})`;
+
+            let svgString = '';
+
+            if (type === 'hoodie') {
+                svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="380" height="460" viewBox="0 0 380 460">
+                    <rect width="380" height="460" fill="#f8fafc"/>
+                    <path d="M 90 90 Q 190 120 290 90 L 330 170 L 290 190 L 290 410 L 90 410 L 90 190 L 50 170 Z" fill="${colorHex}" stroke="#cbd5e1" stroke-width="3"/>
+                    <path d="M 130 80 Q 190 140 250 80 Q 190 30 130 80 Z" fill="${colorHex}" filter="brightness(0.92)" stroke="#94a3b8" stroke-width="2"/>
+                    <path d="M 170 110 L 170 170 M 210 110 L 210 170" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M 120 290 L 260 290 L 270 370 L 110 370 Z" fill="${colorHex}" filter="brightness(0.96)" stroke="#cbd5e1" stroke-width="2"/>
+                </svg>`;
+            } else if (type === 'tshirt') {
+                svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="380" height="460" viewBox="0 0 380 460">
+                    <rect width="380" height="460" fill="#f8fafc"/>
+                    <path d="M 100 80 Q 190 120 280 80 L 330 150 L 280 170 L 280 420 L 100 420 L 100 170 L 50 150 Z" fill="${colorHex}" stroke="#cbd5e1" stroke-width="3"/>
+                    <path d="M 140 70 Q 190 110 240 70" fill="none" stroke="#94a3b8" stroke-width="4"/>
+                </svg>`;
+            } else if (type === 'mug') {
+                svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="380" height="460" viewBox="0 0 380 460">
+                    <rect width="380" height="460" fill="#f8fafc"/>
+                    <path d="M 270 150 C 350 150 350 310 270 310" fill="none" stroke="${colorHex}" filter="brightness(0.85)" stroke-width="28" stroke-linecap="round"/>
+                    <rect x="90" y="110" width="180" height="230" rx="20" fill="${colorHex}" stroke="#cbd5e1" stroke-width="3"/>
+                    <ellipse cx="180" cy="110" rx="90" ry="15" fill="${colorHex}" filter="brightness(0.95)" stroke="#cbd5e1" stroke-width="2"/>
+                </svg>`;
+            } else if (type === 'totebag') {
+                svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="380" height="460" viewBox="0 0 380 460">
+                    <rect width="380" height="460" fill="#f8fafc"/>
+                    <path d="M 130 180 L 130 50 Q 190 40 250 50 L 250 180" fill="none" stroke="#94a3b8" stroke-width="16" stroke-linecap="round"/>
+                    <rect x="80" y="170" width="220" height="240" rx="12" fill="${colorHex}" stroke="#cbd5e1" stroke-width="3"/>
+                </svg>`;
+            } else if (type === 'cap') {
+                svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="380" height="460" viewBox="0 0 380 460">
+                    <rect width="380" height="460" fill="#f8fafc"/>
+                    <path d="M 90 220 Q 190 100 290 220 Z" fill="${colorHex}" stroke="#cbd5e1" stroke-width="3"/>
+                    <path d="M 70 220 Q 190 200 310 220 L 330 260 Q 190 230 50 260 Z" fill="#1e293b" stroke="#0f172a" stroke-width="2"/>
+                    <circle cx="190" cy="160" r="5" fill="#cbd5e1"/>
+                </svg>`;
+            } else {
+                svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="380" height="460" viewBox="0 0 380 460">
+                    <rect width="380" height="460" fill="#f8fafc"/>
+                    <rect x="130" y="100" width="120" height="280" rx="25" fill="${colorHex}" stroke="#cbd5e1" stroke-width="3"/>
+                    <rect x="150" y="60" width="80" height="40" rx="8" fill="#64748b"/>
+                </svg>`;
+            }
+
+            const encoded = 'data:image/svg+xml;utf8,' + encodeURIComponent(svgString);
+            fabric.Image.fromURL(encoded, (img) => {
+                fabricCanvas.setBackgroundImage(img, fabricCanvas.renderAll.bind(fabricCanvas));
+            });
+        }
+
+        /* NAVIGATION CONTROL */
+        function switchMainTab(tab) {
+            ['designer', 'catalog', 'orders'].forEach(t => {
+                document.getElementById(`view-${t}`).classList.add('hidden');
+                document.getElementById(`nav-btn-${t}`).className = "nav-tab-btn px-4 py-2 rounded-xl text-slate-600 hover:text-sky-600 transition";
+            });
+
+            document.getElementById(`view-${tab}`).classList.remove('hidden');
+            document.getElementById(`nav-btn-${tab}`).className = "nav-tab-btn px-4 py-2 rounded-xl bg-white text-sky-600 shadow-xs transition font-bold";
+        }
+
+        function switchStudioTool(tool) {
+            document.querySelectorAll('.studio-tool-content').forEach(c => c.classList.add('hidden'));
+            document.querySelectorAll('.studio-tool-btn').forEach(b => {
+                b.className = "studio-tool-btn py-2.5 rounded-xl text-slate-500 hover:text-slate-800 transition flex flex-col items-center gap-1";
+            });
+
+            document.getElementById(`st-content-${tool}`).classList.remove('hidden');
+            document.getElementById(`st-btn-${tool}`).className = "studio-tool-btn py-2.5 rounded-xl bg-white text-sky-600 shadow-xs transition flex flex-col items-center gap-1 font-bold";
+        }
+
+        /* DESIGNER PRODUCTS & COLOR LOGIC */
+        function renderDesignerProducts() {
+            const products = getProductsList();
+            const grid = document.getElementById('designer-products-grid');
+            grid.innerHTML = '';
+
+            products.forEach(p => {
+                const card = document.createElement('button');
+                card.id = `dcard-${p.id}`;
+                card.onclick = () => selectProduct(p.id);
+                card.className = "prod-card p-2.5 rounded-2xl border border-slate-200 text-left transition flex flex-col items-center justify-center text-center gap-1.5 hover:border-sky-400 bg-white";
+                card.innerHTML = `
+                    <div class="w-8 h-8 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center text-base">
+                        <i class="fa-solid ${p.icon || 'fa-shirt'}"></i>
+                    </div>
+                    <div>
+                        <span class="block text-[11px] font-bold text-slate-800 leading-tight">${p.name}</span>
+                        <span class="text-[10px] text-sky-600 font-extrabold">$${p.price.toLocaleString('es-CO')} COP</span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function selectProduct(id) {
+            const products = getProductsList();
+            activeProduct = products.find(p => p.id === id) || products[0];
+
+            document.querySelectorAll('.prod-card').forEach(c => c.classList.remove('border-2', 'border-sky-500', 'bg-sky-50/50'));
+            const activeCard = document.getElementById(`dcard-${id}`);
+            if (activeCard) activeCard.classList.add('border-2', 'border-sky-500', 'bg-sky-50/50');
+
+            renderColorPalette(activeProduct.colors);
+            selectColor(activeProduct.colors[0]);
+            updatePriceSummary();
+        }
+
+        function renderColorPalette(colors) {
+            const container = document.getElementById('designer-colors-palette');
+            container.innerHTML = '';
+
+            colors.forEach(c => {
+                const btn = document.createElement('button');
+                btn.onclick = () => selectColor(c);
+                btn.className = "w-7 h-7 rounded-full border-2 border-white shadow-xs transition transform hover:scale-110";
+                btn.style.backgroundColor = c.hex;
+                btn.title = c.name;
+                container.appendChild(btn);
+            });
+        }
+
+        function selectColor(colorObj) {
+            selectedColor = colorObj;
+            document.getElementById('selected-color-label').innerText = colorObj.name;
+            renderMockupBackground();
+            updatePriceSummary();
+        }
+
+        function setProductSize(size) {
+            selectedSize = size;
+            document.querySelectorAll('.size-btn').forEach(b => {
+                b.className = "size-btn px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold hover:border-sky-400 transition flex-1";
+            });
+            event.target.className = "size-btn px-3 py-2 border-2 border-sky-500 bg-sky-50 text-sky-600 rounded-xl text-xs font-bold transition flex-1";
+            updatePriceSummary();
+        }
+
+        /* STICKER LOGIC */
+        function renderDesignerStickers() {
+            const stickers = getStickersList();
+            const categories = ['Todos', ...new Set(stickers.map(s => s.category))];
+            
+            const catPills = document.getElementById('sticker-category-pills');
+            catPills.innerHTML = '';
+
+            categories.forEach((cat, idx) => {
+                const btn = document.createElement('button');
+                btn.onclick = () => filterStickersByCategory(cat);
+                btn.className = `px-3 py-1 rounded-full text-[11px] whitespace-nowrap transition ${idx === 0 ? 'bg-sky-500 text-white font-bold' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`;
+                btn.innerText = cat;
+                btn.dataset.cat = cat;
+                catPills.appendChild(btn);
+            });
+
+            filterStickersByCategory('Todos');
+        }
+
+        function filterStickersByCategory(cat) {
+            const stickers = getStickersList();
+            document.querySelectorAll('#sticker-category-pills button').forEach(b => {
+                b.className = b.dataset.cat === cat ? 'px-3 py-1 rounded-full text-[11px] whitespace-nowrap transition bg-sky-500 text-white font-bold' : 'px-3 py-1 rounded-full text-[11px] whitespace-nowrap transition bg-slate-100 text-slate-600 hover:bg-slate-200';
+            });
+
+            const filtered = cat === 'Todos' ? stickers : stickers.filter(s => s.category === cat);
+            renderStickerGridItems(filtered);
+        }
+
+        function filterStickersList() {
+            const query = document.getElementById('sticker-search-input').value.toLowerCase();
+            const stickers = getStickersList();
+            const filtered = stickers.filter(s => s.name.toLowerCase().includes(query) || s.category.toLowerCase().includes(query));
+            renderStickerGridItems(filtered);
+        }
+
+        function renderStickerGridItems(list) {
+            const grid = document.getElementById('designer-stickers-grid');
+            grid.innerHTML = '';
+
+            list.forEach(s => {
+                const item = document.createElement('div');
+                item.className = "p-2 bg-slate-50 border border-slate-200 rounded-2xl hover:border-sky-400 hover:shadow-xs transition cursor-pointer flex flex-col items-center group";
+                item.onclick = () => addStickerToCanvas(s.url);
+                item.innerHTML = `
+                    <div class="w-14 h-14 flex items-center justify-center p-1">
+                        <img src="${s.url}" alt="${s.name}" class="max-h-full max-w-full object-contain group-hover:scale-105 transition">
+                    </div>
+                    <span class="text-[9px] font-bold text-slate-600 truncate w-full text-center mt-1">${s.name}</span>
+                `;
+                grid.appendChild(item);
+            });
+        }
+
+        function addStickerToCanvas(url) {
+            fabric.Image.fromURL(url, (img) => {
+                img.scaleToWidth(110);
+                img.set({
+                    left: 135,
+                    top: 160,
+                    cornerColor: '#0284c7',
+                    cornerStyle: 'circle',
+                    cornerSize: 10,
+                    transparentCorners: false
+                });
+                fabricCanvas.add(img);
+                fabricCanvas.setActiveObject(img);
+                fabricCanvas.renderAll();
+                showToast("Sticker añadido al lienzo", "success");
+            });
+        }
+
+        function addTextToCanvas() {
+            const txt = document.getElementById('custom-text-field').value.trim();
+            if (!txt) {
+                showToast("Escribe algún mensaje para añadir", "warning");
+                return;
+            }
+
+            const font = document.getElementById('text-font-selector').value;
+            const color = document.getElementById('text-color-picker').value;
+            const size = parseInt(document.getElementById('text-size-range').value, 10);
+            const strokeColor = document.getElementById('text-stroke-picker').value;
+            const strokeWidth = parseInt(document.getElementById('text-stroke-width').value, 10);
+
+            const textObj = new fabric.Text(txt, {
+                left: 120,
+                top: 180,
+                fontFamily: font,
+                fill: color,
+                fontSize: size,
+                stroke: strokeWidth > 0 ? strokeColor : null,
+                strokeWidth: strokeWidth,
+                cornerColor: '#0284c7',
+                cornerStyle: 'circle',
+                transparentCorners: false
+            });
+
+            fabricCanvas.add(textObj);
+            fabricCanvas.setActiveObject(textObj);
+            fabricCanvas.renderAll();
+            document.getElementById('custom-text-field').value = '';
+            showToast("Texto personalizado añadido", "success");
+        }
+
+        function handleUserFileUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                addStickerToCanvas(evt.target.result);
+                
+                const gallery = document.getElementById('user-uploads-gallery');
+                const img = document.createElement('img');
+                img.src = evt.target.result;
+                img.className = "w-16 h-16 object-cover rounded-xl border border-slate-200 cursor-pointer hover:opacity-80";
+                img.onclick = () => addStickerToCanvas(evt.target.result);
+                gallery.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        /* CANVAS ACTION TOOLS */
+        function bringSelectedForward() {
+            const active = fabricCanvas.getActiveObject();
+            if (active) { fabricCanvas.bringForward(active); fabricCanvas.renderAll(); }
+        }
+
+        function sendSelectedBackward() {
+            const active = fabricCanvas.getActiveObject();
+            if (active) { fabricCanvas.sendBackwards(active); fabricCanvas.renderAll(); }
+        }
+
+        function centerSelectedObject() {
+            const active = fabricCanvas.getActiveObject();
+            if (active) { active.center(); active.setCoords(); fabricCanvas.renderAll(); }
+        }
+
+        function flipSelectedHorizontal() {
+            const active = fabricCanvas.getActiveObject();
+            if (active) { active.set('flipX', !active.flipX); fabricCanvas.renderAll(); }
+        }
+
+        function deleteSelectedObject() {
+            const active = fabricCanvas.getActiveObject();
+            if (active) { fabricCanvas.remove(active); fabricCanvas.renderAll(); }
+        }
+
+        function clearCanvasItems() {
+            fabricCanvas.clear();
+            renderMockupBackground();
+            showToast("Lienzo limpiado", "info");
+        }
+
+        /* PRICE CALCULATOR SUMMARY */
+        function updatePriceSummary() {
+            if (!activeProduct) return;
+
+            const objCount = fabricCanvas ? fabricCanvas.getObjects().length : 0;
+            const extraCost = Math.max(0, objCount - 1) * 5000;
+            const total = activeProduct.price + extraCost;
+
+            document.getElementById('summary-prod-name').innerText = activeProduct.name;
+            document.getElementById('summary-prod-size').innerText = `Talla ${selectedSize} • ${selectedColor ? selectedColor.name : ''}`;
+            document.getElementById('summary-price-tag').innerText = `$${total.toLocaleString('es-CO')} COP`;
+        }
+
+        function downloadDesignPNG() {
+            fabricCanvas.discardActiveObject();
+            fabricCanvas.renderAll();
+
+            const url = fabricCanvas.toDataURL({ format: 'png', quality: 1 });
+            const a = document.createElement('a');
+            a.download = `CELESTE_Custom_${activeProduct.id}_${Date.now()}.png`;
+            a.href = url;
+            a.click();
+            showToast("Imagen de diseño guardada", "success");
+        }
+
+        /* CHECKOUT & ORDER LOGIC */
+        function addDesignToCartAndCheckout() {
+            openCheckoutModal();
+        }
+
+        function openCheckoutModal() {
+            if (!activeProduct) return;
+
+            fabricCanvas.discardActiveObject();
+            fabricCanvas.renderAll();
+
+            const previewUrl = fabricCanvas.toDataURL({ format: 'png', quality: 0.8 });
+            document.getElementById('checkout-preview-img').src = previewUrl;
+            document.getElementById('checkout-prod-title').innerText = activeProduct.name;
+            document.getElementById('checkout-prod-details').innerText = `Talla ${selectedSize} • Color: ${selectedColor ? selectedColor.name : 'Estándar'}`;
+
+            const objCount = fabricCanvas.getObjects().length;
+            const extraCost = Math.max(0, objCount - 1) * 5000;
+            const total = activeProduct.price + extraCost;
+            document.getElementById('checkout-prod-price').innerText = `$${total.toLocaleString('es-CO')} COP`;
+            document.getElementById('checkout-final-total').innerText = `$${total.toLocaleString('es-CO')} COP`;
+
+            renderCheckoutPaymentMethods();
+            document.getElementById('checkout-modal').classList.remove('hidden');
+        }
+
+        function closeCheckoutModal() {
+            document.getElementById('checkout-modal').classList.add('hidden');
+        }
+
+        function renderCheckoutPaymentMethods() {
+            const gateways = getGatewaysConfig().filter(g => g.enabled);
+            const list = document.getElementById('checkout-payment-methods-list');
+            list.innerHTML = '';
+
+            gateways.forEach((g, idx) => {
+                const label = document.createElement('label');
+                label.className = "flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:border-sky-400 transition";
+                label.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <input type="radio" name="paymethod" value="${g.id}" ${idx === 0 ? 'checked' : ''} onchange="onPaymentMethodSelected('${g.id}')" class="accent-sky-500">
+                        <span class="text-xs font-bold text-slate-800">${g.name}</span>
+                    </div>
+                    ${g.fee > 0 ? `<span class="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold">+ $${g.fee.toLocaleString('es-CO')} Recargo</span>` : ''}
+                `;
+                list.appendChild(label);
+            });
+
+            if (gateways.length > 0) onPaymentMethodSelected(gateways[0].id);
+        }
+
+        function onPaymentMethodSelected(id) {
+            const gateways = getGatewaysConfig();
+            const gateway = gateways.find(g => g.id === id);
+            const box = document.getElementById('gateway-extra-info-box');
+
+            if (!gateway) return;
+
+            if (id === 'nequi') {
+                box.classList.remove('hidden');
+                box.innerHTML = `
+                    <p class="font-bold text-slate-800"><i class="fa-solid fa-mobile-screen text-sky-500"></i> Transferir a Nequi / Bancolombia:</p>
+                    <p>Número de Cuenta: <strong class="text-sky-600 font-mono">${gateway.accountNum || '3001234567'}</strong></p>
+                    <p>Titular: <strong>${gateway.holder || 'CELESTE Store'}</strong></p>
+                `;
+            } else if (id === 'mercadopago') {
+                box.classList.remove('hidden');
+                box.innerHTML = `
+                    <p class="font-bold text-slate-800"><i class="fa-solid fa-credit-card text-sky-500"></i> Mercado Pago Activo:</p>
+                    <p class="text-[11px] text-slate-600">Al confirmar, se simulará el pago seguro con tu tarjeta o PSE.</p>
+                `;
+            } else {
+                box.classList.add('hidden');
+            }
+        }
+
+        function processFinalOrderCheckout() {
+            const name = document.getElementById('cust-name').value.trim();
+            const phone = document.getElementById('cust-phone').value.trim();
+            const address = document.getElementById('cust-address').value.trim();
+            const methodEl = document.querySelector('input[name="paymethod"]:checked');
+
+            if (!name || !phone || !address || !methodEl) {
+                showCustomDialog("Campos Incompletos", "Por favor completa tu nombre, teléfono y dirección de envío para procesar tu orden.");
+                return;
+            }
+
+            const methodId = methodEl.value;
+            const objCount = fabricCanvas.getObjects().length;
+            const total = activeProduct.price + Math.max(0, objCount - 1) * 5000;
+            const designSnapshot = fabricCanvas.toDataURL({ format: 'png', quality: 0.8 });
+
+            const newOrder = {
+                id: 'ORD-' + Math.floor(100000 + Math.random() * 900000),
+                date: new Date().toLocaleDateString('es-CO') + ' ' + new Date().toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit'}),
+                customerName: name,
+                phone: phone,
+                address: address,
+                productName: activeProduct.name,
+                size: selectedSize,
+                color: selectedColor ? selectedColor.name : 'Estándar',
+                total: total,
+                method: methodId,
+                status: 'Pendiente',
+                designImage: designSnapshot
+            };
+
+            // Save to localStorage
+            const orders = getOrdersList();
+            orders.unshift(newOrder);
+            localStorage.setItem('celeste_orders', JSON.stringify(orders));
+
+            closeCheckoutModal();
+            renderOrdersView();
+
+            if (methodId === 'whatsapp') {
+                const cfg = getAppConfig();
+                const msg = `¡Hola ${cfg.storeName}! 🌸\nAcabo de realizar un pedido desde la web:\n• *Orden:* ${newOrder.id}\n• *Cliente:* ${name}\n• *Producto:* ${activeProduct.name} (${selectedSize})\n• *Total:* $${total.toLocaleString('es-CO')} COP\n• *Dirección:* ${address}`;
+                window.open(`https://wa.me/${cfg.whatsapp}?text=${encodeURIComponent(msg)}`, '_blank');
+            }
+
+            showCustomDialog("¡Pedido Recibido con Éxito!", `Tu pedido #${newOrder.id} ha sido registrado. Puedes ver el estado en la pestaña 'Mis Pedidos'.`, 'success');
+        }
+
+        function renderOrdersView() {
+            const orders = getOrdersList();
+            const list = document.getElementById('customer-orders-list');
+            document.getElementById('cart-orders-count').innerText = orders.length;
+            document.getElementById('cart-badge').innerText = orders.length;
+
+            if (orders.length === 0) {
+                list.innerHTML = `
+                    <div class="text-center py-12 text-slate-400">
+                        <i class="fa-solid fa-box-open text-4xl mb-3"></i>
+                        <p class="text-xs font-bold">Aún no has realizado pedidos.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = '';
+            orders.forEach(o => {
+                const item = document.createElement('div');
+                item.className = "p-4 bg-slate-50 rounded-2xl border border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-4";
+                item.innerHTML = `
+                    <div class="flex items-center space-x-4 w-full sm:w-auto">
+                        <img src="${o.designImage}" class="w-16 h-16 object-contain bg-white rounded-xl border border-slate-200 p-1">
+                        <div>
+                            <span class="text-[10px] font-mono text-slate-400 font-bold">${o.id} • ${o.date}</span>
+                            <h4 class="font-bold text-slate-800 text-sm">${o.productName} (${o.size})</h4>
+                            <span class="text-xs text-slate-500 block">Pago: ${o.method.toUpperCase()}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-4 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-200">
+                        <span class="text-sm font-black text-emerald-600">$${o.total.toLocaleString('es-CO')} COP</span>
+                        <span class="px-3 py-1 rounded-full text-[10px] font-extrabold uppercase bg-amber-100 text-amber-700">${o.status}</span>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function renderCatalogView() {
+            const products = getProductsList();
+            const grid = document.getElementById('full-catalog-grid');
+            grid.innerHTML = '';
+
+            products.forEach(p => {
+                const card = document.createElement('div');
+                card.className = "p-4 rounded-3xl border border-slate-200 bg-slate-50 flex flex-col justify-between hover:shadow-md transition";
+                card.innerHTML = `
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-sky-100 text-sky-600 flex items-center justify-center text-xl mb-3">
+                            <i class="fa-solid ${p.icon || 'fa-shirt'}"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-800 text-sm mb-1">${p.name}</h3>
+                        <p class="text-xs text-slate-400 mb-3">Categoría: ${p.category}</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-3 border-t border-slate-200">
+                        <span class="font-black text-sky-600 text-sm">$${p.price.toLocaleString('es-CO')} COP</span>
+                        <button onclick="switchMainTab('designer'); selectProduct('${p.id}');" class="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition">
+                            Diseñar
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        /* SUPER ADMIN & DEVELOPER CONTROLLER */
+        function openSuperAdminModal() {
+            document.getElementById('superadmin-modal').classList.remove('hidden');
+        }
+
+        function closeSuperAdminModal() {
+            document.getElementById('superadmin-modal').classList.add('hidden');
+        }
+
+        function unlockSuperAdmin() {
+            const pass = document.getElementById('admin-pass-input').value;
+            if (pass === 'admin123' || pass === 'admin') {
+                document.getElementById('admin-pin-view').classList.add('hidden');
+                document.getElementById('admin-workbench-view').classList.remove('hidden');
+                loadAdminFormData();
+            } else {
+                document.getElementById('admin-pass-err').classList.remove('hidden');
+            }
+        }
+
+        function switchAdminTab(tab) {
+            document.querySelectorAll('.admin-sec-content').forEach(s => s.classList.add('hidden'));
+            document.querySelectorAll('.admin-tab-btn').forEach(b => {
+                b.className = "admin-tab-btn px-5 py-3 border-b-2 border-transparent hover:text-slate-200 flex items-center gap-2 whitespace-nowrap";
+            });
+
+            document.getElementById(`ad-sec-${tab}`).classList.remove('hidden');
+            document.getElementById(`ad-tab-${tab}`).className = "admin-tab-btn px-5 py-3 border-b-2 border-amber-400 text-amber-400 font-bold flex items-center gap-2 whitespace-nowrap";
+
+            if (tab === 'payments') renderAdminGateways();
+            if (tab === 'catalog') renderAdminStickersManage();
+            if (tab === 'orders') renderAdminOrdersTable();
+        }
+
+        function loadAdminFormData() {
+            const cfg = getAppConfig();
+            document.getElementById('adm-store-name').value = cfg.storeName;
+            document.getElementById('adm-store-tagline').value = cfg.tagline;
+            document.getElementById('adm-store-whatsapp').value = cfg.whatsapp;
+            document.getElementById('adm-store-logo-url').value = cfg.logoUrl;
+
+            document.getElementById('adm-color-primary').value = cfg.colorPrimary;
+            document.getElementById('adm-color-secondary').value = cfg.colorSecondary;
+            document.getElementById('adm-color-btn').value = cfg.colorBtn;
+            document.getElementById('adm-color-bg').value = cfg.colorBg;
+
+            document.getElementById('adm-code-css-input').value = cfg.customCSS;
+            document.getElementById('adm-code-html-input').value = cfg.customHTMLBanner;
+        }
+
+        function previewThemeColorsLive() {
+            const rootStyle = document.documentElement.style;
+            rootStyle.setProperty('--color-primary', document.getElementById('adm-color-primary').value);
+            rootStyle.setProperty('--color-secondary', document.getElementById('adm-color-secondary').value);
+            rootStyle.setProperty('--color-btn', document.getElementById('adm-color-btn').value);
+            rootStyle.setProperty('--color-body-bg', document.getElementById('adm-color-bg').value);
+        }
+
+        function switchCodeEditorSubTab(sub) {
+            document.getElementById('editor-block-css').classList.add('hidden');
+            document.getElementById('editor-block-banner').classList.add('hidden');
+
+            document.getElementById('code-subtab-css').className = "px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 font-bold";
+            document.getElementById('code-subtab-banner').className = "px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 font-bold";
+
+            if (sub === 'css') {
+                document.getElementById('editor-block-css').classList.remove('hidden');
+                document.getElementById('code-subtab-css').className = "px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold";
+            } else {
+                document.getElementById('editor-block-banner').classList.remove('hidden');
+                document.getElementById('code-subtab-banner').className = "px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold";
+            }
+        }
+
+        function applyInjectedCodeLive() {
+            const css = document.getElementById('adm-code-css-input').value;
+            const banner = document.getElementById('adm-code-html-input').value;
+
+            document.getElementById('user-custom-css').innerHTML = css;
+            document.getElementById('dynamic-user-banner').innerHTML = banner;
+
+            showToast("Código CSS y Banner inyectados en tiempo real", "success");
+        }
+
+        function saveAllAdminSettings() {
+            const cfg = {
+                storeName: document.getElementById('adm-store-name').value.trim(),
+                tagline: document.getElementById('adm-store-tagline').value.trim(),
+                whatsapp: document.getElementById('adm-store-whatsapp').value.trim(),
+                logoUrl: document.getElementById('adm-store-logo-url').value.trim(),
+                colorPrimary: document.getElementById('adm-color-primary').value,
+                colorSecondary: document.getElementById('adm-color-secondary').value,
+                colorBtn: document.getElementById('adm-color-btn').value,
+                colorBg: document.getElementById('adm-color-bg').value,
+                customCSS: document.getElementById('adm-code-css-input').value,
+                customHTMLBanner: document.getElementById('adm-code-html-input').value
+            };
+
+            localStorage.setItem('celeste_config', JSON.stringify(cfg));
+            applySavedConfigToDOM();
+            showCustomDialog("Ajustes Guardados", "Los datos de marca, colores y código inyectado han sido actualizados globalmente.", "success");
+        }
+
+        function renderAdminGateways() {
+            const gateways = getGatewaysConfig();
+            const grid = document.getElementById('adm-payment-gateways-grid');
+            grid.innerHTML = '';
+
+            gateways.forEach((g, idx) => {
+                const card = document.createElement('div');
+                card.className = "p-4 bg-slate-900 border border-slate-800 rounded-2xl space-y-2";
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-xs text-white">${g.name}</span>
+                        <input type="checkbox" ${g.enabled ? 'checked' : ''} onchange="toggleGatewayEnabled(${idx})" class="w-4 h-4 accent-amber-400">
+                    </div>
+                    <p class="text-[10px] text-slate-400">${g.details || 'Pasarela de pago'}</p>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function toggleGatewayEnabled(idx) {
+            const gateways = getGatewaysConfig();
+            gateways[idx].enabled = !gateways[idx].enabled;
+            localStorage.setItem('celeste_gateways', JSON.stringify(gateways));
+            renderAdminGateways();
+        }
+
+        function saveAdminNewSticker() {
+            const name = document.getElementById('adm-stk-name').value.trim();
+            const cat = document.getElementById('adm-stk-cat').value;
+            const file = document.getElementById('adm-stk-file').files[0];
+
+            if (!name || !file) {
+                showToast("Ingresa un nombre y selecciona un archivo", "warning");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const newSticker = {
+                    id: 'stk-adm-' + Date.now(),
+                    name: name,
+                    category: cat,
+                    url: e.target.result
+                };
+
+                const stickers = getStickersList();
+                stickers.push(newSticker);
+                localStorage.setItem('celeste_stickers', JSON.stringify(stickers));
+
+                document.getElementById('adm-stk-name').value = '';
+                document.getElementById('adm-stk-file').value = '';
+
+                renderDesignerStickers();
+                renderAdminStickersManage();
+                showToast("Sticker añadido al catálogo", "success");
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function renderAdminStickersManage() {
+            const stickers = getStickersList();
+            const grid = document.getElementById('adm-stickers-manage-grid');
+            grid.innerHTML = '';
+
+            stickers.forEach(s => {
+                const item = document.createElement('div');
+                item.className = "p-2 bg-slate-900 border border-slate-800 rounded-xl relative flex flex-col items-center group";
+                item.innerHTML = `
+                    <button onclick="deleteStickerAdmin('${s.id}')" class="absolute top-1 right-1 w-5 h-5 bg-rose-500 text-white rounded-full text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                    <img src="${s.url}" class="w-10 h-10 object-contain mb-1">
+                    <span class="text-[8px] font-bold text-slate-300 truncate w-full text-center">${s.name}</span>
+                `;
+                grid.appendChild(item);
+            });
+        }
+
+        function deleteStickerAdmin(id) {
+            let stickers = getStickersList().filter(s => s.id !== id);
+            localStorage.setItem('celeste_stickers', JSON.stringify(stickers));
+            renderDesignerStickers();
+            renderAdminStickersManage();
+        }
+
+        function renderAdminOrdersTable() {
+            const orders = getOrdersList();
+            const list = document.getElementById('adm-orders-table-list');
+
+            if (orders.length === 0) {
+                list.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">No hay pedidos registrados.</p>`;
+                return;
+            }
+
+            list.innerHTML = '';
+            orders.forEach(o => {
+                const row = document.createElement('div');
+                row.className = "p-3 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-between gap-3 text-xs";
+                row.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <img src="${o.designImage}" class="w-10 h-10 object-contain bg-slate-800 rounded-lg p-0.5">
+                        <div>
+                            <span class="font-bold text-amber-300">${o.id}</span>
+                            <span class="text-slate-300 block font-semibold">${o.customerName} (${o.phone})</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="font-black text-emerald-400 block">$${o.total.toLocaleString('es-CO')}</span>
+                        <span class="text-[10px] text-slate-400">${o.status}</span>
+                    </div>
+                `;
+                list.appendChild(row);
+            });
+        }
+
+        function clearAllOrdersData() {
+            localStorage.removeItem('celeste_orders');
+            renderOrdersView();
+            renderAdminOrdersTable();
+            showToast("Historial de pedidos vaciado", "info");
+        }
+
+        /* UI HELPER FUNCTIONS */
+        function showToast(msg, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            const bgClass = type === 'success' ? 'bg-emerald-500 text-white' : type === 'warning' ? 'bg-amber-500 text-slate-950' : 'bg-slate-900 text-white';
+            toast.className = `px-4 py-2.5 rounded-2xl shadow-xl text-xs font-bold transition transform translate-y-2 flex items-center gap-2 ${bgClass} pointer-events-auto`;
+            toast.innerHTML = `<i class="fa-solid fa-circle-info"></i> <span>${msg}</span>`;
+
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3200);
+        }
+
+        function showCustomDialog(title, message, iconType = 'info') {
+            document.getElementById('dialog-title').innerText = title;
+            document.getElementById('dialog-message').innerText = message;
+            document.getElementById('custom-dialog-modal').classList.remove('hidden');
+        }
+
+        function closeCustomDialog() {
+            document.getElementById('custom-dialog-modal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
