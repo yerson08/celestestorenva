@@ -1,0 +1,15 @@
+{
+  "id": "p-camisa",
+  "name": "Camiseta Básica",
+  "category": "camisa",
+  "shape": "camisa",
+  "builtin": true,
+  "image": null,
+  "colors": [
+    {"name": "Blanco", "hex": "#FFFFFF"},
+    {"name": "Negro", "hex": "#1A1A1A"},
+    {"name": "Gris Jaspe", "hex": "#B7B7AC"},
+    {"name": "Rojo", "hex": "#B5342E"},
+    {"name": "Azul Marino", "hex": "#1F3352"}
+  ]
+}
