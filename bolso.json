@@ -1,0 +1,13 @@
+{
+  "id": "p-bolso",
+  "name": "Bolso Tote",
+  "category": "bolso",
+  "shape": "bolso",
+  "builtin": true,
+  "image": null,
+  "colors": [
+    {"name": "Crudo", "hex": "#E8DFC8"},
+    {"name": "Negro", "hex": "#1A1A1A"},
+    {"name": "Azul Marino", "hex": "#1F3352"}
+  ]
+}
