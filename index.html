@@ -1,4 +1,7 @@
-<!doctype html>
+cd /home/claude && python3 - <<'PYEOF'
+catalog_json = open('catalog.json', encoding='utf-8').read()
+
+html = """<!doctype html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -12,7 +15,11 @@
 </head>
 <body>
 <div id="app"></div>
-<script id="catalog-data" type="application/json">{"products":[{"id":"p-camisa","name":"Camiseta Básica","category":"camisa","shape":"camisa","builtin":true,"image":null,"colors":[{"name":"Blanco","hex":"#FFFFFF"},{"name":"Negro","hex":"#1A1A1A"},{"name":"Gris Jaspe","hex":"#B7B7AC"},{"name":"Rojo","hex":"#B5342E"},{"name":"Azul Marino","hex":"#1F3352"}]},{"id":"p-buso","name":"Buso con Capota","category":"buso","shape":"buso","builtin":true,"image":null,"colors":[{"name":"Negro","hex":"#1A1A1A"},{"name":"Gris Jaspe","hex":"#B7B7AC"},{"name":"Vino","hex":"#6E2142"},{"name":"Verde Militar","hex":"#4B5320"}]},{"id":"p-vaso","name":"Vaso Térmico","category":"vaso","shape":"vaso","builtin":true,"image":null,"colors":[{"name":"Blanco","hex":"#FFFFFF"},{"name":"Negro","hex":"#1A1A1A"},{"name":"Acero","hex":"#8C9196"},{"name":"Amarillo","hex":"#D69A00"}]},{"id":"p-bolso","name":"Bolso Tote","category":"bolso","shape":"bolso","builtin":true,"image":null,"colors":[{"name":"Crudo","hex":"#E8DFC8"},{"name":"Negro","hex":"#1A1A1A"},{"name":"Azul Marino","hex":"#1F3352"}]}],"stickers":[{"id":"s-estrella","name":"Estrella","builtin":"estrella"},{"id":"s-rayo","name":"Rayo","builtin":"rayo"},{"id":"s-corazon","name":"Corazón","builtin":"corazon"},{"id":"s-circulo","name":"Círculo","builtin":"circulo"}]}</script>
+<script id="catalog-data" type="application/json">""" + catalog_json + """</script>
 <script src="script.js"></script>
 </body>
 </html>
+"""
+open('standalone_index.html','w',encoding='utf-8').write(html)
+print(len(html))
+PYEOF
