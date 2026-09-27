@@ -1,7 +1,4 @@
-cd /home/claude && python3 - <<'PYEOF'
-catalog_json = open('catalog.json', encoding='utf-8').read()
-
-html = """<!doctype html>
+<!doctype html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -10,16 +7,11 @@ html = """<!doctype html>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <div id="app"></div>
-<script id="catalog-data" type="application/json">""" + catalog_json + """</script>
 <script src="script.js"></script>
 </body>
 </html>
-"""
-open('standalone_index.html','w',encoding='utf-8').write(html)
-print(len(html))
-PYEOF
